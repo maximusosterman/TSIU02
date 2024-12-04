@@ -1,18 +1,18 @@
 <ASSEMBLER_INFO>
  <VERSION>2.2.8</VERSION>
  <DEVICE>"ATmega16A"</DEVICE>
- <WORKING_DIR>X:\datorteknik\lab3\lab3\lab3\Debug</WORKING_DIR>
+ <WORKING_DIR>X:\datorteknik\TSIU02\lab3\lab3\lab3\Debug</WORKING_DIR>
  <INCLUDE_PATH>
   <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
   <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
   <DIR></DIR>
  </INCLUDE_PATH>
- <SOURCE_FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</SOURCE_FILE>
+ <SOURCE_FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</SOURCE_FILE>
  <INCLUDED_FILES>
   <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc</FILE>
  </INCLUDED_FILES>
  <OBJECT_FILES>
-  <FILE>X:\datorteknik\lab3\lab3\lab3\Debug\lab3.obj</FILE>
+  <FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\Debug\lab3.obj</FILE>
  </OBJECT_FILES>
  <HEX_FILES>
   <FILE>lab3.hex</FILE>
@@ -22,15 +22,17 @@
   <FILE>lab3.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <COLD><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>11</LINE></COLD>
-  <DIGIT_LOOKUP><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>16</LINE></DIGIT_LOOKUP>
-  <HW_INIT><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>44</LINE></HW_INIT>
-  <SELECT_SEGMENT><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>51</LINE></SELECT_SEGMENT>
-  <SET_DIGIT><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>55</LINE></SET_DIGIT>
-  <WAIT><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>40</LINE></WAIT>
-  <UPDATE_DISPLAY><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>74</LINE></UPDATE_DISPLAY>
-  <INT1_vect><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>79</LINE></INT1_vect>
-  <no_reset_mux><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>93</LINE></no_reset_mux>
-  <INT0_vect><FILE>X:\datorteknik\lab3\lab3\lab3\main.asm</FILE><LINE>105</LINE></INT0_vect>
+  <TIME><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>10</LINE></TIME>
+  <POS><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>11</LINE></POS>
+  <COLD><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>27</LINE></COLD>
+  <INT0_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>125</LINE></INT0_VECT>
+  <INT1_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>86</LINE></INT1_VECT>
+  <HW_INIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>56</LINE></HW_INIT>
+  <SELECT_SEGMENT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>63</LINE></SELECT_SEGMENT>
+  <SET_DIGIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>67</LINE></SET_DIGIT>
+  <WAIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>53</LINE></WAIT>
+  <DIGIT_LOOKUP><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>181</LINE></DIGIT_LOOKUP>
+  <START_OF_MUX_LOOP><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>103</LINE></START_OF_MUX_LOOP>
+  <LOAD_TIME><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>170</LINE></LOAD_TIME>
  </LABELS>
 </ASSEMBLER_INFO>

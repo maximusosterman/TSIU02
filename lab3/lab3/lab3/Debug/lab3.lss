@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  X:\datorteknik\lab3\lab3\lab3\main.asm Tue Dec 03 20:04:59 2024
+AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm Wed Dec 04 21:44:09 2024
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
@@ -870,7 +870,6 @@ AVRASM ver. 2.2.8  X:\datorteknik\lab3\lab3\lab3\main.asm Tue Dec 03 20:04:59 20
                                  #endif  /* _M16ADEF_INC_ */
                                  
                                  
-                                 
                                  ;
                                  ; lab3.asm
                                  ;
@@ -878,118 +877,184 @@ AVRASM ver. 2.2.8  X:\datorteknik\lab3\lab3\lab3\main.asm Tue Dec 03 20:04:59 20
                                  ; Author : maxve266
                                  ;
                                  
+                                 .dseg
+000060                           		TIME: .byte 4
+000064                           		POS: .byte 1
+                                 .cseg
+                                 		.def seconds = r22
+                                 		.def minutes = r23
+                                 		.def digit_value = r20
+                                 		.def position = r17
+                                 
+                                 		.org $0000
+000000 940c 002a                 	jmp COLD
+                                 		.org INT0addr
+000002 940c 007b                 	jmp INT0_VECT
+                                 		.org INT1addr
+000004 940c 005d                 	jmp INT1_VECT
+                                 
+                                 	.org INT_VECTORS_SIZE
                                  
                                  COLD:
-                                 	.def seconds = r22
-                                 	.def digit_value = r20
-                                 	.def mux_counter = r17
+00002a e004                      	ldi	r16, HIGH(RAMEND) ; Set stack
+00002b bf0e                      	out	SPH, r16
+00002c e50f                      	ldi	r16, LOW(RAMEND)
+00002d bf0d                      	out	SPL, r16
                                  
-                                 	DIGIT_LOOKUP:
-000000 063f
-000001 4f5b
-000002 6d66
-000003 077d
-000004 6f7f                      		.db 0b0111111, 0b0000110, 0b1011011, 0b1001111, 0b1100110, 0b1101101, 0b1111101, 0b0000111, 0b1111111, 0b1101111
+00002e e00a                      	ldi r16,(1<<ISC01)|(0<<ISC00)|(1<<ISC11)|(0<<ISC10)
+00002f bf05                      	out MCUCR,r16
                                  
-000005 e004                      	ldi	r16, HIGH(RAMEND) ; Set stack
-000006 bf0e                      	out	SPH, r16
-000007 e50f                      	ldi	r16, LOW(RAMEND)
-000008 bf0d                      	out	SPL, r16
+000030 ec00                      	ldi r16,(1<<INT0)|(1<<INT1)
+000031 bf0b                      	out GICR,r16 
                                  
-000009 e00a                      	ldi r16,(1<<ISC01)|(0<<ISC00)|(1<<ISC11)|(0<<ISC10)
-00000a bf05                      	out MCUCR,r16
+000032 e060                      	ldi seconds, 0
+000033 9360 0060                 	sts TIME+0,seconds
+000035 9360 0061                 	sts TIME+1,seconds
+000037 9360 0062                 	sts TIME+2,seconds
+000039 9360 0063                 	sts TIME+3,seconds
+00003b 9360 0064                 	sts POS, seconds
                                  
-00000b ec00                      	ldi r16,(1<<INT0)|(1<<INT1)
-00000c bf0b                      	out GICR,r16 
-                                 
-00000d ec00                      	ldi r16, (1<<INTF0)|(1<<INTF1)
-00000e bf0a                          out GIFR, r16
-                                 
-00000f 940e 001a                 	call HW_INIT
-000011 e060                      	ldi seconds, 0
-000012 e010                      	ldi mux_counter, 0 ; Parmater f�r SELECT_DIGIT
-000013 940e 001f                 	call SELECT_SEGMENT
-000015 e042                      	ldi digit_value, 2 ; Paramter f�r SET_DIGIT
-000016 940e 0021                 	call SET_DIGIT
+00003d 940e 0048                 	call HW_INIT
+00003f e010                      	ldi position, 0 ; POS ; Parmater för SELECT_DIGIT
+000040 940e 004d                 	call SELECT_SEGMENT
+000042 e040                      	ldi digit_value, 0 ; TIME ;  ; Paramter för SET_DIGIT
+000043 940e 004f                 	call SET_DIGIT
+000045 9478                      	sei
                                  
                                  WAIT:
-000018 940c 0018                 	jmp WAIT
-                                 
+000046 940c 0046                 	jmp WAIT
                                  
                                  HW_INIT:
-00001a ef8f                      	ldi r24, $FF 
-00001b bb87                      	out DDRB, r24 
-00001c bb8a                      	out DDRA, r24
-00001d 2788                      	clr r24
-00001e 9508                      	ret
+000048 ef8f                      	ldi r24, $FF 
+000049 bb87                      	out DDRB, r24 
+00004a bb8a                      	out DDRA, r24
+00004b 2788                      	clr r24
+00004c 9508                      	ret
                                  
                                  SELECT_SEGMENT:
-00001f bb1b                      	out PORTA, mux_counter
-000020 9508                      	ret
+00004d bb1b                      	out PORTA, position
+00004e 9508                      	ret
                                  
                                  SET_DIGIT:
-000021 93ff                      	push ZH
-000022 93ef                      	push ZL
-000023 935f                      	push r21
-000024 2411                      	clr r1
+00004f 93ff                      	push ZH
+000050 93ef                      	push ZL
+000051 935f                      	push r21
+000052 2411                      	clr r1
                                  
-000025 e0f0                      	ldi	ZH, HIGH(DIGIT_LOOKUP)
-000026 e0e0                      	ldi	ZL, LOW(DIGIT_LOOKUP)
-000027 0fe4                      	add ZL, digit_value
-000028 1df1                      	adc ZH, r1
-000029 9154                      	lpm r21, Z
+000053 e0f1                      	ldi	ZH, HIGH(DIGIT_LOOKUP*2)
+000054 e4e2                      	ldi	ZL, LOW(DIGIT_LOOKUP*2)
+000055 0fe4                      	add ZL, digit_value
+000056 1df1                      	adc ZH, r1
+000057 9154                      	lpm r21, Z
                                  
-00002a bb58                      	out PORTB, r21
+000058 bb58                      	out PORTB, r21
                                  
-00002b 915f                      	pop r21
-00002c 91ef                      	pop ZL
-00002d 91ff                      	pop ZH
-00002e 9508                      	ret
+000059 915f                      	pop r21
+00005a 91ef                      	pop ZL
+00005b 91ff                      	pop ZH
+00005c 9508                      	ret
                                  
-                                 UPDATE_DISPLAY:
-00002f 2f46                      	mov digit_value, seconds
-000030 940e 0021                 	call SET_digit
-000032 9508                      	ret
+                                 INT1_VECT:
+00005d 930f                      	push r16
+00005e b70f                      	in r16, SREG
+00005f 930f                      	push r16
+000060 938f                      	push r24
+000061 932f                      	push r18
+000062 931f                      	push position
+000063 934f                      	push digit_value
                                  
-                                 INT1_vect:
-000033 934f                      	push digit_value
-000034 b74f                      	in digit_value, SREG
-000035 934f                      	push digit_value
                                  
-000036 931f                      	push mux_counter
-000037 b71f                      	in mux_counter, SREG
-000038 931f                      	push mux_counter
+000064 e0d0                      	ldi YH, HIGH(POS)
+000065 e6c4                      	ldi YL, LOW(POS)
                                  
-000039 940e 0021                 	call SET_DIGIT
-00003b 9513                      	inc mux_counter
-00003c 3014                      	cpi mux_counter, 4
-00003d f008                      	brlo no_reset_mux
-00003e 2711                      	clr mux_counter
-                                 no_reset_mux:
-00003f 940e 002f                 	call UPDATE_DISPLAY
+000066 e0f0                      	ldi ZH, HIGH(TIME)
+000067 e6e0                      	ldi ZL, LOW(TIME)
                                  
-000041 911f                      	pop mux_counter
-000042 bf1f                      	out SREG, mux_counter
-000043 911f                      	pop mux_counter
+000068 e080                      	ldi r24, 0
+                                 START_OF_MUX_LOOP:
+000069 8118                      	ld position, Y
+00006a 9141                      	ld digit_value, Z+
+                                 	
+00006b 940e 004d                 	call SELECT_SEGMENT
+00006d 940e 004f                 	call SET_DIGIT
                                  
-000044 914f                      	pop digit_value
-000045 bf4f                      	out SREG, digit_value
-000046 914f                      	pop digit_value
-000047 9518                      	reti
+00006f 8388                      	st Y, r24
                                  
-                                 INT0_vect:
-                                 	; Hanteras f�r att r�kna sekunde 
-000048 936f                      	push seconds
-000049 b76f                      	in seconds, SREG
-00004a 936f                      	push seconds
+000070 9583                      	inc r24
+000071 3084                      	cpi r24, 4
+000072 f7b1                      	brne START_OF_MUX_LOOP
                                  
-00004b 9563                      	inc seconds
-00004c 940e 002f                 	call UPDATE_DISPLAY
+000073 934f                      	push digit_value
+000074 931f                      	push position
+000075 932f                      	push r18
+000076 918f                      	pop r24
+000077 910f                      	pop r16
+000078 bf0f                      	out SREG, r16
+000079 910f                      	pop r16
+00007a 9518                      	reti
                                  
-00004e 916f                      	pop seconds
-00004f bf6f                      	out SREG, seconds
-000050 916f                      	pop seconds
-000051 9518                      	reti 
+                                 INT0_VECT:
+                                 	; Hanteras för att räkna sekunde 
+00007b 930f                      	push r16
+00007c b70f                      	in r16, SREG
+00007d 930f                      	push r16
+00007e 936f                      	push seconds
+00007f 932f                      	push r18
+                                 	
+000080 e0d0                      	ldi YH, HIGH(TIME)
+000081 e6c0                      	ldi YL, LOW(TIME)
+                                 
+                                 	; räkna upp det som Y pekar på:
+000082 8168                      	ld seconds, Y
+000083 9563                      	inc seconds
+                                 
+                                 	; if- för om över 10
+000084 306a                      	cpi seconds, 10
+000085 f4a1                      	brne LOAD_TIME
+000086 2766                      	clr seconds
+000087 9369                      	st Y+, seconds; Bit Y ska laddas med 0
+                                 	
+                                 	; Bit Y ska laddas med +1
+000088 8168                      	ld seconds, Y
+000089 9563                      	inc seconds
+00008a 3066                      	cpi seconds, 6 
+00008b f471                      	brne LOAD_TIME
+                                 	
+                                 	; räkna upp det som Y pekar på:
+00008c 2766                      	clr seconds
+00008d 9369                      	st Y+, seconds
+00008e 8168                      	ld seconds, Y
+00008f 9563                      	inc seconds
+                                 
+000090 306a                      	cpi seconds, 10 
+000091 f441                      	brne LOAD_TIME
+000092 2766                      	clr seconds
+000093 9369                      	st Y+, seconds
+000094 8168                      	ld seconds, Y
+000095 9563                      	inc seconds
+                                 
+000096 3066                      	cpi seconds, 6
+000097 f411                      	brne LOAD_TIME
+000098 2766                      	clr seconds
+000099 9369                      	st Y+, seconds
+                                 
+                                 LOAD_TIME:
+00009a 8368                      	st Y, seconds
+                                 
+00009b 912f                      	pop r18
+00009c 916f                      	pop seconds
+00009d 910f                      	pop r16
+00009e bf0f                      	out SREG, r16
+00009f 910f                      	pop r16
+0000a0 9518                      	reti 
+                                 
+                                 
+                                 DIGIT_LOOKUP:
+0000a1 063f
+0000a2 4f5b
+0000a3 6d66
+0000a4 077d
+0000a5 6f7f                      	.db 0b0111111, 0b0000110, 0b1011011, 0b1001111, 0b1100110, 0b1101101, 0b1111101, 0b0000111, 0b1111111, 0b1101111
 
 
 RESOURCE USE INFORMATION
@@ -1007,40 +1072,40 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega16A" register use summary:
-x  :   0 y  :   0 z  :   1 r0 :   0 r1 :   2 r2 :   0 r3 :   0 r4 :   0 
+x  :   0 y  :  11 z  :   2 r0 :   0 r1 :   2 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  10 r17:  11 r18:   0 r19:   0 r20:   9 
-r21:   4 r22:   9 r23:   0 r24:   4 r25:   0 r26:   0 r27:   0 r28:   0 
-r29:   0 r30:   4 r31:   4 
-Registers used: 10 out of 35 (28.6%)
+r13:   0 r14:   0 r15:   0 r16:  20 r17:   5 r18:   4 r19:   0 r20:   5 
+r21:   4 r22:  29 r23:   0 r24:  10 r25:   0 r26:   0 r27:   0 r28:   2 
+r29:   2 r30:   5 r31:   5 
+Registers used: 14 out of 35 (40.0%)
 
 "ATmega16A" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   1 add   :   1 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
-brhs  :   0 brid  :   0 brie  :   0 brlo  :   1 brlt  :   0 brmi  :   0 
-brne  :   0 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :   7 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   3 cls   :   0 
+brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
+brne  :   5 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :   5 cbi   :   0 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   6 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   1 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   3 inc   :   2 jmp   :   1 
-ld    :   0 ldd   :   0 ldi   :  11 lds   :   0 lpm   :   2 lsl   :   0 
-lsr   :   0 mov   :   1 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  12 pop   :   9 
-push  :   9 rcall :   0 ret   :   4 reti  :   2 rjmp  :   0 rol   :   0 
+cpi   :   5 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   2 inc   :   5 jmp   :   4 
+ld    :   6 ldd   :   0 ldi   :  17 lds   :   0 lpm   :   2 lsl   :   0 
+lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  10 pop   :  10 
+push  :  16 rcall :   0 ret   :   3 reti  :   2 rjmp  :   0 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
-sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   0 
+sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
+sez   :   0 sleep :   0 spm   :   0 st    :   6 std   :   0 sts   :   5 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 17 out of 113 (15.0%)
+Instructions used: 20 out of 113 (17.7%)
 
 "ATmega16A" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0000a4    154     10    164   16384   1.0%
-[.dseg] 0x000060 0x000060      0      0      0    1024   0.0%
+[.cseg] 0x000000 0x00014c    250     10    260   16384   1.6%
+[.dseg] 0x000060 0x000065      0      5      5    1024   0.5%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
 Assembly complete, 0 errors, 0 warnings
