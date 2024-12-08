@@ -25,14 +25,15 @@
   <TIME><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>10</LINE></TIME>
   <POS><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>11</LINE></POS>
   <COLD><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>27</LINE></COLD>
-  <INT0_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>125</LINE></INT0_VECT>
-  <INT1_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>86</LINE></INT1_VECT>
-  <HW_INIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>56</LINE></HW_INIT>
-  <SELECT_SEGMENT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>63</LINE></SELECT_SEGMENT>
-  <SET_DIGIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>67</LINE></SET_DIGIT>
-  <WAIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>53</LINE></WAIT>
-  <DIGIT_LOOKUP><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>181</LINE></DIGIT_LOOKUP>
-  <START_OF_MUX_LOOP><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>103</LINE></START_OF_MUX_LOOP>
-  <LOAD_TIME><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>170</LINE></LOAD_TIME>
+  <INT0_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>152</LINE></INT0_VECT>
+  <INT1_VECT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>88</LINE></INT1_VECT>
+  <HW_INIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>58</LINE></HW_INIT>
+  <SELECT_SEGMENT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>65</LINE></SELECT_SEGMENT>
+  <SET_DIGIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>69</LINE></SET_DIGIT>
+  <WAIT><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>55</LINE></WAIT>
+  <DIGIT_LOOKUP><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>208</LINE></DIGIT_LOOKUP>
+  <NO_CLEAR_POS><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>111</LINE></NO_CLEAR_POS>
+  <SET_DIGI_IN_MUX><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>122</LINE></SET_DIGI_IN_MUX>
+  <LOAD_TIME><FILE>X:\datorteknik\TSIU02\lab3\lab3\lab3\main.asm</FILE><LINE>197</LINE></LOAD_TIME>
  </LABELS>
 </ASSEMBLER_INFO>

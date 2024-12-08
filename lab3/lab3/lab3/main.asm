@@ -30,18 +30,20 @@ COLD:
 	ldi	r16, LOW(RAMEND)
 	out	SPL, r16
 
-	ldi r16,(1<<ISC01)|(0<<ISC00)|(1<<ISC11)|(0<<ISC10)
-	out MCUCR,r16
-
-	ldi r16,(1<<INT0)|(1<<INT1)
-	out GICR,r16 
-
 	ldi seconds, 0
 	sts TIME+0,seconds
 	sts TIME+1,seconds
 	sts TIME+2,seconds
 	sts TIME+3,seconds
+	ldi seconds, 3
 	sts POS, seconds
+	clr seconds
+
+	ldi r16,(1<<ISC01)|(0<<ISC00)|(1<<ISC11)|(0<<ISC10)
+	out MCUCR,r16
+
+	ldi r16,(1<<INT0)|(1<<INT1)
+	out GICR,r16 
 
 	call HW_INIT
 	ldi position, 0 ; POS ; Parmater för SELECT_DIGIT
@@ -87,10 +89,11 @@ INT1_VECT:
 	push r16
 	in r16, SREG
 	push r16
+
 	push r24
 	push r18
-	push position
-	push digit_value
+	push r17
+	push r20
 
 
 	ldi YH, HIGH(POS)
@@ -99,24 +102,48 @@ INT1_VECT:
 	ldi ZH, HIGH(TIME)
 	ldi ZL, LOW(TIME)
 
-	ldi r24, 0
-START_OF_MUX_LOOP:
-	ld position, Y
-	ld digit_value, Z+
+	ld r17, Y ; Position
+	inc r17
+	cpi r17, 4
+	brne NO_CLEAR_POS
+	clr r17
+
+NO_CLEAR_POS:
+	add ZL, r17
+	ldi r19, 0
+	adc ZH, r19 ; Digit_value
+	ld r20, Z
+
+
+	;call SELECT_SEGMENT
+	out PORTA, r17
 	
-	call SELECT_SEGMENT
-	call SET_DIGIT
+	;call SET_DIGIT
+	SET_DIGI_IN_MUX:
+		push ZH
+		push ZL
+		push r21
+		clr r1
 
-	st Y, r24
+		ldi	ZH, HIGH(DIGIT_LOOKUP*2)
+		ldi	ZL, LOW(DIGIT_LOOKUP*2)
+		add ZL, r20
+		adc ZH, r1
+		lpm r21, Z
 
-	inc r24
-	cpi r24, 4
-	brne START_OF_MUX_LOOP
+		out PORTB, r21
 
-	push digit_value
-	push position
-	push r18
+		pop r21
+		pop ZL
+		pop ZH
+
+	st Y, r17
+
+	pop r20
+	pop r17
+	pop r18
 	pop r24
+
 	pop r16
 	out SREG, r16
 	pop r16
