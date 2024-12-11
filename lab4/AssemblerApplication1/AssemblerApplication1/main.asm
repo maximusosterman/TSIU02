@@ -13,7 +13,8 @@
 	.equ	PRESCALE    = 7		; AD-prescaler value
 	.equ	BEEP_PITCH  = 20	; Victory beep pitch
 	.equ	BEEP_LENGTH = 100	; Victory beep length
-	
+
+	.def	ZERO = r0
 	; ---------------------------------------
 	; --- Memory layout in SRAM
 	.dseg
@@ -57,10 +58,13 @@ START:
 	ldi		r16,LOW(RAMEND)
 	out		SPL,r16
 
-	ldi		r16,$FF
-	out		DDRB,r16
-	out		DDRD,r16
-	call	AGAIN
+	clr		ZERO
+
+	ldi		r16, $FF
+	out		DDRB, r16
+	out		DDRA, r16
+	out		DDRD, ZERO
+	
 	call	HW_INIT	
 	call	WARM
 RUN:
@@ -73,7 +77,7 @@ RUN:
 ;*** 	Avgör om träff				 	***
 
 	brne	NO_HIT	
-	ldi	r16,BEEP_LENGTH
+	ldi		r16,BEEP_LENGTH
 	call	BEEP
 	call	WARM
 NO_HIT:
@@ -82,9 +86,51 @@ NO_HIT:
 	; ---------------------------------------
 	; --- Multiplex display
 MUX:	
+	push	r16
+	in		r16, SREG
+	push	r16
+	push	ZH
+	push	ZL
+	push	r17
+	push	r18
 
 ;*** 	skriv rutin som handhar multiplexningen och ***
 ;*** 	utskriften till diodmatrisen. Öka SEED.		***
+
+    
+	ldi		ZH, HIGH(VMEM)
+	ldi		ZL, LOW(VMEM)
+
+	out		PORTB, ZERO
+
+	lds		r18, LINE
+	inc		r18
+	cpi		r18,3
+	brne	CONTINUE_MUX
+	ldi		r18, 0
+
+CONTINUE_MUX:
+	out		PORTA, r18
+    sts		LINE, r18
+	add		ZL, r18 
+	ld		r21, Z
+	out		PORTB, r21
+	
+	ldi		ZH, HIGH(SEED)
+	ldi		ZL, LOW(SEED)
+
+	ld		r17, Z
+	inc		r17
+	st		Z, r17
+
+
+	pop		r18
+	pop		r17 
+	pop		ZL
+	pop		ZH
+	pop		r16
+	out		SREG, r16
+	pop		r16
 
 	reti
 		
@@ -117,9 +163,9 @@ LIMITS:
 	ret
 
 POS_LIM:
-	ori	r16,0		; negative?
+	ori	    r16,0		; negative?
 	brmi	POS_LESS	; POSX neg => add 1
-	cp	r16,r17		; past edge
+	cp	    r16,r17		; past edge
 	brne	POS_OK
 	subi	r16,2
 POS_LESS:
@@ -173,8 +219,14 @@ SETBIT_END:
 HW_INIT:
 
 ;*** 	Konfigurera hårdvara och MUX-avbrott enligt ***
-;*** 	ditt elektriska schema. Konfigurera 		***
+;*** 	ditt elektriska schema. Konfigurera 		*** DONE 
 ;*** 	flanktriggat avbrott på INT0 (PD2).			***
+
+	ldi r16,(1<<ISC01)|(0<<ISC00)
+	out MCUCR,r16
+
+	ldi r16,(1<<INT0)
+	out GICR,r16 
 	
 	sei			; display on
 	ret
@@ -192,6 +244,8 @@ WARM:
 ;*** 	Sätt startposition (TPOSX,POSY)				***
 
 	call	ERASE_VMEM
+	pop		r0
+	pop		r0
 	ret
 
 	; ---------------------------------------

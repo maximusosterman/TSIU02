@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApplication1\main.asm Sun Dec 08 14:06:14 2024
+AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApplication1\main.asm Wed Dec 11 19:42:28 2024
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
@@ -884,7 +884,8 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  	.equ	PRESCALE    = 7		; AD-prescaler value
                                  	.equ	BEEP_PITCH  = 20	; Victory beep pitch
                                  	.equ	BEEP_LENGTH = 100	; Victory beep length
-                                 	
+                                 
+                                 	.def	ZERO = r0
                                  	; ---------------------------------------
                                  	; --- Memory layout in SRAM
                                  	.dseg
@@ -928,36 +929,81 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
 000006 e50f                      	ldi		r16,LOW(RAMEND)
 000007 bf0d                      	out		SPL,r16
                                  
-000008 ef0f                      	ldi		r16,$FF
-000009 bb07                      	out		DDRB,r16
-00000a bb01                      	out		DDRD,r16
-00000b 940e 0065                 	call	AGAIN
-00000d 940e 0053                 	call	HW_INIT	
-00000f 940e 0055                 	call	WARM
+000008 2400                      	clr		ZERO
+                                 
+000009 ef0f                      	ldi		r16, $FF
+00000a bb07                      	out		DDRB, r16
+00000b bb0a                      	out		DDRA, r16
+00000c ba01                      	out		DDRD, ZERO
+                                 	
+00000d 940e 0075                 	call	HW_INIT	
+00000f 940e 007b                 	call	WARM
                                  RUN:
-000011 940e 0020                 	call	JOYSTICK
-000013 940e 0063                 	call	ERASE_VMEM
-000015 940e 0039                 	call	UPDATE
+000011 940e 0042                 	call	JOYSTICK
+000013 940e 008b                 	call	ERASE_VMEM
+000015 940e 005b                 	call	UPDATE
                                  
                                  ;*** 	Vänta en stund så inte spelet går för fort 	***
                                  	
                                  ;*** 	Avgör om träff				 	***
                                  
 000017 f429                      	brne	NO_HIT	
-000018 e604                      	ldi	r16,BEEP_LENGTH
-000019 940e 0064                 	call	BEEP
-00001b 940e 0055                 	call	WARM
+000018 e604                      	ldi		r16,BEEP_LENGTH
+000019 940e 008c                 	call	BEEP
+00001b 940e 007b                 	call	WARM
                                  NO_HIT:
 00001d 940c 0011                 	jmp	RUN
                                  
                                  	; ---------------------------------------
                                  	; --- Multiplex display
                                  MUX:	
+00001f 930f                      	push	r16
+000020 b70f                      	in		r16, SREG
+000021 930f                      	push	r16
+000022 93ff                      	push	ZH
+000023 93ef                      	push	ZL
+000024 931f                      	push	r17
+000025 932f                      	push	r18
                                  
                                  ;*** 	skriv rutin som handhar multiplexningen och ***
                                  ;*** 	utskriften till diodmatrisen. Öka SEED.		***
                                  
-00001f 9518                      	reti
+                                     
+000026 e0f0                      	ldi		ZH, HIGH(VMEM)
+000027 e6e5                      	ldi		ZL, LOW(VMEM)
+                                 
+000028 ba08                      	out		PORTB, ZERO
+                                 
+000029 9120 0064                 	lds		r18, LINE
+00002b 9523                      	inc		r18
+00002c 3023                      	cpi		r18,3
+00002d f409                      	brne	CONTINUE_MUX
+00002e e020                      	ldi		r18, 0
+                                 
+                                 CONTINUE_MUX:
+00002f bb2b                      	out		PORTA, r18
+000030 9320 0064                     sts		LINE, r18
+000032 0fe2                      	add		ZL, r18 
+000033 8150                      	ld		r21, Z
+000034 bb58                      	out		PORTB, r21
+                                 	
+000035 e0f0                      	ldi		ZH, HIGH(SEED)
+000036 e6ea                      	ldi		ZL, LOW(SEED)
+                                 
+000037 8110                      	ld		r17, Z
+000038 9513                      	inc		r17
+000039 8310                      	st		Z, r17
+                                 
+                                 
+00003a 912f                      	pop		r18
+00003b 911f                      	pop		r17 
+00003c 91ef                      	pop		ZL
+00003d 91ff                      	pop		ZH
+00003e 910f                      	pop		r16
+00003f bf0f                      	out		SREG, r16
+000040 910f                      	pop		r16
+                                 
+000041 9518                      	reti
                                  		
                                  	; ---------------------------------------
                                  	; --- JOYSTICK Sense stick and update POSX, POSY
@@ -970,73 +1016,73 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  ;*** 	...och samma för Y-led 				***
                                  
                                  JOY_LIM:
-000020 940e 0023                 	call	LIMITS		; don't fall off world!
-000022 9508                      	ret
+000042 940e 0045                 	call	LIMITS		; don't fall off world!
+000044 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- LIMITS Limit POSX,POSY coordinates	
                                  	; --- Uses r16,r17
                                  LIMITS:
-000023 9100 0060                 	lds	r16,POSX	; variable
-000025 e017                      	ldi	r17,7		; upper limit+1
-000026 940e 0032                 	call	POS_LIM		; actual work
-000028 9300 0060                 	sts	POSX,r16
-00002a 9100 0061                 	lds	r16,POSY	; variable
-00002c e015                      	ldi	r17,5		; upper limit+1
-00002d 940e 0032                 	call	POS_LIM		; actual work
-00002f 9300 0061                 	sts	POSY,r16
-000031 9508                      	ret
+000045 9100 0060                 	lds	r16,POSX	; variable
+000047 e017                      	ldi	r17,7		; upper limit+1
+000048 940e 0054                 	call	POS_LIM		; actual work
+00004a 9300 0060                 	sts	POSX,r16
+00004c 9100 0061                 	lds	r16,POSY	; variable
+00004e e015                      	ldi	r17,5		; upper limit+1
+00004f 940e 0054                 	call	POS_LIM		; actual work
+000051 9300 0061                 	sts	POSY,r16
+000053 9508                      	ret
                                  
                                  POS_LIM:
-000032 6000                      	ori	r16,0		; negative?
-000033 f01a                      	brmi	POS_LESS	; POSX neg => add 1
-000034 1701                      	cp	r16,r17		; past edge
-000035 f411                      	brne	POS_OK
-000036 5002                      	subi	r16,2
+000054 6000                      	ori	    r16,0		; negative?
+000055 f01a                      	brmi	POS_LESS	; POSX neg => add 1
+000056 1701                      	cp	    r16,r17		; past edge
+000057 f411                      	brne	POS_OK
+000058 5002                      	subi	r16,2
                                  POS_LESS:
-000037 9503                      	inc	r16	
+000059 9503                      	inc	r16	
                                  POS_OK:
-000038 9508                      	ret
+00005a 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- UPDATE VMEM
                                  	; --- with POSX/Y, TPOSX/Y
                                  	; --- Uses r16, r17
                                  UPDATE:	
-000039 27ff                      	clr	ZH 
-00003a e6e0                      	ldi	ZL,LOW(POSX)
-00003b 940e 0042                 	call 	SETPOS
-00003d 27ff                      	clr	ZH
-00003e e6e2                      	ldi	ZL,LOW(TPOSX)
-00003f 940e 0042                 	call	SETPOS
-000041 9508                      	ret
+00005b 27ff                      	clr	ZH 
+00005c e6e0                      	ldi	ZL,LOW(POSX)
+00005d 940e 0064                 	call 	SETPOS
+00005f 27ff                      	clr	ZH
+000060 e6e2                      	ldi	ZL,LOW(TPOSX)
+000061 940e 0064                 	call	SETPOS
+000063 9508                      	ret
                                  
                                  	; --- SETPOS Set bit pattern of r16 into *Z
                                  	; --- Uses r16, r17
                                  	; --- 1st call Z points to POSX at entry and POSY at exit
                                  	; --- 2nd call Z points to TPOSX at entry and TPOSY at exit
                                  SETPOS:
-000042 9111                      	ld	r17,Z+  	; r17=POSX
-000043 940e 004c                 	call	SETBIT		; r16=bitpattern for VMEM+POSY
-000045 8110                      	ld	r17,Z		; r17=POSY Z to POSY
-000046 e6e5                      	ldi	ZL,LOW(VMEM)
-000047 0fe1                      	add	ZL,r17		; *(VMEM+T/POSY) ZL=VMEM+0..4
-000048 8110                      	ld	r17,Z		; current line in VMEM
-000049 2b10                      	or	r17,r16		; OR on place
-00004a 8310                      	st	Z,r17		; put back into VMEM
-00004b 9508                      	ret
+000064 9111                      	ld	r17,Z+  	; r17=POSX
+000065 940e 006e                 	call	SETBIT		; r16=bitpattern for VMEM+POSY
+000067 8110                      	ld	r17,Z		; r17=POSY Z to POSY
+000068 e6e5                      	ldi	ZL,LOW(VMEM)
+000069 0fe1                      	add	ZL,r17		; *(VMEM+T/POSY) ZL=VMEM+0..4
+00006a 8110                      	ld	r17,Z		; current line in VMEM
+00006b 2b10                      	or	r17,r16		; OR on place
+00006c 8310                      	st	Z,r17		; put back into VMEM
+00006d 9508                      	ret
                                  	
                                  	; --- SETBIT Set bit r17 on r16
                                  	; --- Uses r16, r17
                                  SETBIT:
-00004c e001                      	ldi	r16,$01		; bit to shift
+00006e e001                      	ldi	r16,$01		; bit to shift
                                  SETBIT_LOOP:
-00004d 951a                      	dec 	r17			
-00004e f01a                      	brmi 	SETBIT_END	; til done
-00004f 0f00                      	lsl 	r16		; shift
-000050 940c 004d                 	jmp 	SETBIT_LOOP
+00006f 951a                      	dec 	r17			
+000070 f01a                      	brmi 	SETBIT_END	; til done
+000071 0f00                      	lsl 	r16		; shift
+000072 940c 006f                 	jmp 	SETBIT_LOOP
                                  SETBIT_END:
-000052 9508                      	ret
+000074 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- Hardware init
@@ -1044,11 +1090,17 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  HW_INIT:
                                  
                                  ;*** 	Konfigurera hårdvara och MUX-avbrott enligt ***
-                                 ;*** 	ditt elektriska schema. Konfigurera 		***
+                                 ;*** 	ditt elektriska schema. Konfigurera 		*** DONE 
                                  ;*** 	flanktriggat avbrott på INT0 (PD2).			***
+                                 
+000075 e002                      	ldi r16,(1<<ISC01)|(0<<ISC00)
+000076 bf05                      	out MCUCR,r16
+                                 
+000077 e400                      	ldi r16,(1<<INT0)
+000078 bf0b                      	out GICR,r16 
                                  	
-000053 9478                      	sei			; display on
-000054 9508                      	ret
+000079 9478                      	sei			; display on
+00007a 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- WARM start. Set up a new game
@@ -1056,14 +1108,16 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  
                                  ;*** 	Sätt startposition (POSX,POSY)=(0,2)		***
                                  
-000055 920f                      	push	r0		
-000056 920f                      	push	r0		
-000057 940e 005c                 	call	RANDOM		; RANDOM returns x,y on stack
+00007b 920f                      	push	r0		
+00007c 920f                      	push	r0		
+00007d 940e 0084                 	call	RANDOM		; RANDOM returns x,y on stack
                                  
                                  ;*** 	Sätt startposition (TPOSX,POSY)				***
                                  
-000059 940e 0063                 	call	ERASE_VMEM
-00005b 9508                      	ret
+00007f 940e 008b                 	call	ERASE_VMEM
+000081 900f                      	pop		r0
+000082 900f                      	pop		r0
+000083 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- RANDOM generate TPOSX, TPOSY
@@ -1076,18 +1130,18 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  	; ---	pop TPOSY
                                  	; --- Uses r16
                                  RANDOM:
-00005c b70e                      	in	r16,SPH
-00005d 2ff0                      	mov	ZH,r16
-00005e b70d                      	in	r16,SPL
-00005f 2fe0                      	mov	ZL,r16
-000060 9100 006a                 	lds	r16,SEED
+000084 b70e                      	in	r16,SPH
+000085 2ff0                      	mov	ZH,r16
+000086 b70d                      	in	r16,SPL
+000087 2fe0                      	mov	ZL,r16
+000088 9100 006a                 	lds	r16,SEED
                                  	
                                  ;*** 	Använd SEED för att beräkna TPOSX		***
                                  ;*** 	Använd SEED för att beräkna TPOSX		***
                                  
                                  ;	***		; store TPOSX	2..6
                                  ;	***		; store TPOSY   0..4
-000062 9508                      	ret
+00008a 9508                      	ret
                                  
                                  
                                  	; ---------------------------------------
@@ -1098,7 +1152,7 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  
                                  ;*** 	Radera videominnet						***
                                  
-000063 9508                      	ret
+00008b 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- BEEP(r16) r16 half cycles of BEEP-PITCH
@@ -1106,41 +1160,41 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  
                                  ;*** skriv kod för ett ljud som ska markera träff 	***
                                  
-000064 9508                      	ret			
+00008c 9508                      	ret			
                                  
                                  ; ------ A/D-omvandlare ------ ;
                                  AGAIN:
-000065 940e 0076                 	call	ADC8
-000067 bb08                      	out		PORTB,r16	; (bara denna om adc8)
-000068 bb12                      	out		PORTD,r17
-000069 940c 0065                 	jmp		AGAIN
+00008d 940e 009e                 	call	ADC8
+00008f bb08                      	out		PORTB,r16	; (bara denna om adc8)
+000090 bb12                      	out		PORTD,r17
+000091 940c 008d                 	jmp		AGAIN
                                  
                                  ADC10:
-00006b e005                      	ldi		r16,(0<<ADLAR)|5	; right shifted, pin PA5
-00006c b907                      	out		ADMUX,r16
-00006d e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
-00006e b906                      	out		ADCSRA,r16
+000093 e005                      	ldi		r16,(0<<ADLAR)|5	; right shifted, pin PA5
+000094 b907                      	out		ADMUX,r16
+000095 e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
+000096 b906                      	out		ADCSRA,r16
                                  CONVERT10:
-00006f 9a36                      	sbi		ADCSRA,ADSC			; start conversion
+000097 9a36                      	sbi		ADCSRA,ADSC			; start conversion
                                  WAIT10:
-000070 9936                      	sbic	ADCSRA,ADSC
-000071 940c 0070                 	jmp		WAIT10
-000073 b104                      	in		r16,ADCL
-000074 b115                      	in		r17,ADCH			; JÄTTEVIKTIGT ADCH sist
-000075 9508                      	ret
+000098 9936                      	sbic	ADCSRA,ADSC
+000099 940c 0098                 	jmp		WAIT10
+00009b b104                      	in		r16,ADCL
+00009c b115                      	in		r17,ADCH			; JÄTTEVIKTIGT ADCH sist
+00009d 9508                      	ret
                                  
                                  ADC8:
-000076 e205                      	ldi		r16,(1<<ADLAR)|5	; left adjusted, pin PA5
-000077 b907                      	out		ADMUX,r16
-000078 e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
-000079 b906                      	out		ADCSRA,r16
+00009e e205                      	ldi		r16,(1<<ADLAR)|5	; left adjusted, pin PA5
+00009f b907                      	out		ADMUX,r16
+0000a0 e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
+0000a1 b906                      	out		ADCSRA,r16
                                  CONVERT8:
-00007a 9a36                      	sbi		ADCSRA,ADSC			; start conversion
+0000a2 9a36                      	sbi		ADCSRA,ADSC			; start conversion
                                  WAIT8:
-00007b 9936                      	sbic	ADCSRA,ADSC
-00007c 940c 007b                 	jmp		WAIT8
-00007e b105                      	in		r16,ADCH			; JÄTTEVIKTIGT ADCH sist
-00007f 9508                      	ret
+0000a3 9936                      	sbic	ADCSRA,ADSC
+0000a4 940c 00a3                 	jmp		WAIT8
+0000a6 b105                      	in		r16,ADCH			; JÄTTEVIKTIGT ADCH sist
+0000a7 9508                      	ret
                                  
                                  ; med separat konfiguration
                                  /*
@@ -1153,27 +1207,27 @@ AVRASM ver. 2.2.8  X:\datorteknik\TSIU02\lab4\AssemblerApplication1\AssemblerApp
                                  	jmp		AGAINC*/
                                  
                                  ADCINIT:
-000080 9a3d                      	sbi		ADMUX,ADLAR			; Left adjust
-000081 e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
-000082 b906                      	out		ADCSRA,r16
-000083 9508                      	ret
+0000a8 9a3d                      	sbi		ADMUX,ADLAR			; Left adjust
+0000a9 e804                      	ldi		r16,(1<<ADEN)|4		; enable hardware, 1/16=125 kHz
+0000aa b906                      	out		ADCSRA,r16
+0000ab 9508                      	ret
                                  
                                  ; ADC8C  in: r16 channel
                                  ;       out: r16 8-bit result
                                  ;         
                                  ADC8C:							; channel 0..7 in r16
-000084 931f                      	push	r17
-000085 b117                      	in		r17,ADMUX			; get current
-000086 7f18                      	andi	r17,$F8				; clear channels
-000087 2b01                      	or		r16,r17				; set new channel
-000088 b907                      	out		ADMUX,r16
+0000ac 931f                      	push	r17
+0000ad b117                      	in		r17,ADMUX			; get current
+0000ae 7f18                      	andi	r17,$F8				; clear channels
+0000af 2b01                      	or		r16,r17				; set new channel
+0000b0 b907                      	out		ADMUX,r16
                                  CONVERT:
-000089 9a36                      	sbi		ADCSRA,ADSC			; start conversion
+0000b1 9a36                      	sbi		ADCSRA,ADSC			; start conversion
                                  WAIT:
-00008a 9936                      	sbic	ADCSRA,ADSC
-00008b 940c 008a                 	jmp		WAIT
-00008d b105                      	in		r16,ADCH
-00008e 911f                      	pop		r17
+0000b2 9936                      	sbic	ADCSRA,ADSC
+0000b3 940c 00b2                 	jmp		WAIT
+0000b5 b105                      	in		r16,ADCH
+0000b6 911f                      	pop		r17
 
 
 RESOURCE USE INFORMATION
@@ -1191,39 +1245,39 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega16A" register use summary:
-x  :   0 y  :   0 z  :   4 r0 :   2 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
+x  :   0 y  :   0 z  :   7 r0 :   7 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  40 r17:  17 r18:   0 r19:   0 r20:   0 
-r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
-r29:   0 r30:   5 r31:   3 
-Registers used: 6 out of 35 (17.1%)
+r13:   0 r14:   0 r15:   0 r16:  50 r17:  22 r18:   9 r19:   0 r20:   0 
+r21:   2 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
+r29:   0 r30:  10 r31:   7 
+Registers used: 8 out of 35 (22.9%)
 
 "ATmega16A" instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   0 add   :   1 adiw  :   0 and   :   0 
+.lds  :   0 .sts  :   0 adc   :   0 add   :   2 adiw  :   0 and   :   0 
 andi  :   1 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   2 
-brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :  17 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   2 cls   :   0 
+brne  :   3 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :  16 cbi   :   0 cbr   :   0 
+clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   3 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   1 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   1 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   7 inc   :   1 jmp   :   8 
-ld    :   3 ldd   :   0 ldi   :  15 lds   :   3 lpm   :   0 lsl   :   1 
+cpi   :   1 cpse  :   0 dec   :   1 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   8 inc   :   3 jmp   :   8 
+ld    :   5 ldd   :   0 ldi   :  22 lds   :   4 lpm   :   0 lsl   :   1 
 lsr   :   0 mov   :   2 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   2 ori   :   1 out   :  12 pop   :   1 
-push  :   3 rcall :   0 ret   :  15 reti  :   1 rjmp  :   0 rol   :   0 
+neg   :   0 nop   :   0 or    :   2 ori   :   1 out   :  19 pop   :   9 
+push  :   9 rcall :   0 ret   :  15 reti  :   1 rjmp  :   0 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   4 sbic  :   3 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   1 std   :   0 sts   :   2 
+sez   :   0 sleep :   0 spm   :   0 st    :   2 std   :   0 sts   :   3 
 sub   :   0 subi  :   1 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 29 out of 113 (25.7%)
+Instructions used: 30 out of 113 (26.5%)
 
 "ATmega16A" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000120    288      0    288   16384   1.8%
+[.cseg] 0x000000 0x000170    368      0    368   16384   2.2%
 [.dseg] 0x000060 0x00006b      0     11     11    1024   1.1%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
